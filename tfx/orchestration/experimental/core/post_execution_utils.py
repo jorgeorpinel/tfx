@@ -41,6 +41,7 @@ def publish_execution_results_for_task(mlmd_handle: metadata.Metadata,
                                        task: task_lib.ExecNodeTask,
                                        result: ts.TaskSchedulerResult) -> None:
   """Publishes execution results to MLMD for task."""
+  pipeline_state.record_state_change_time()
 
   def _update_state(
       status: status_lib.Status,
@@ -66,7 +67,6 @@ def publish_execution_results_for_task(mlmd_handle: metadata.Metadata,
         error_code=status.code,
         error_msg=status.message,
         execution_result=execution_result)
-    pipeline_state.record_state_change_time()
 
   if result.status.code != status_lib.Code.OK:
     _update_state(result.status)
@@ -123,8 +123,6 @@ def publish_execution_results_for_task(mlmd_handle: metadata.Metadata,
   else:
     raise TypeError(f'Unable to process task scheduler result: {result}')
 
-  pipeline_state.record_state_change_time()
-
 
 def publish_execution_results(
     mlmd_handle: metadata.Metadata,
@@ -132,6 +130,8 @@ def publish_execution_results(
     execution_info: data_types.ExecutionInfo,
     contexts: list[proto.Context]) -> Optional[typing_utils.ArtifactMultiMap]:
   """Publishes execution result to MLMD for single component run."""
+  pipeline_state.record_state_change_time()
+
   if executor_output.execution_result.code != status_lib.Code.OK:
     if executor_output.execution_result.code == status_lib.Code.CANCELLED:
       execution_state = proto.Execution.CANCELED
